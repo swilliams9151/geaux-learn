@@ -75,13 +75,30 @@
 
   async function callAgent(userText){
     messages.push({role:"user",content:userText});
-    const r=await fetch("/api/respond",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages})});
-    const data=await r.json(); const botText=data.text||"(no reply)";
-    messages.push({role:"assistant",content:botText}); addBubble("assistant",botText);
+    try {
+      const r = await fetch("/api/respond", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({messages})
+      });
+
+      let data;
+      try { data = await r.json(); } catch { data = {}; }
+
+      if (!r.ok) {
+        const err = (data && data.error) ? data.error : ("HTTP "+r.status);
+        addBubble("assistant", "Error: " + err);
+        return;
+      }
+
+      const botText = (data && data.text) ? data.text : "(no text returned)";
+      messages.push({role:"assistant",content:botText});
+      addBubble("assistant",botText);
+    } catch (e) {
+      addBubble("assistant","Network error: " + (e?.message || e));
+    }
   }
 
   send.addEventListener("click",async()=>{const t=inp.value.trim(); if(!t)return; addBubble("user",t); inp.value=""; await callAgent(t);});
   inp.addEventListener("keydown",(e)=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send.click();}});
 </script>
-</body>
-</html>
