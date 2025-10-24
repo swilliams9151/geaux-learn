@@ -1,6 +1,6 @@
 // api/respond.js
 const WORKFLOW_ID = "wf_68f8c07d88888190a77420411e0b85f80ac663618d486887";
-const API_BASE = "https://api.openai.com/v1";
+const API_BASE = "https://api.openai.com/v1/beta"; // <-- FIXED endpoint
 
 function orgHeader() {
   const org = process.env.OPENAI_ORG_ID;
@@ -37,10 +37,10 @@ export default async function handler(req, res) {
         .json({ error: explainError("start", err, startResp.status) });
     }
 
-    const started = await startResp.json(); // { id, status, ... }
+    const started = await startResp.json();
     const runId = started.id;
 
-    // 2) Poll until the run completes (simple loop with timeout)
+    // 2) Poll until the run completes
     const deadline = Date.now() + 60_000; // 60s timeout
     let result, status = started.status;
     while (Date.now() < deadline) {
@@ -50,13 +50,15 @@ export default async function handler(req, res) {
           ...orgHeader(),
         },
       });
+
       if (!poll.ok) {
         const err = await safeJson(poll);
         return res
           .status(poll.status)
           .json({ error: explainError("poll", err, poll.status) });
       }
-      result = await poll.json(); // { status, output, ... }
+
+      result = await poll.json();
       status = result.status;
       if (status === "completed" || status === "failed" || status === "canceled") break;
       await sleep(1200);
@@ -74,13 +76,8 @@ export default async function handler(req, res) {
       (typeof out === "string" ? out : "") ||
       "";
 
-    if (!text) {
-      // last resort: dump something useful
-      text = JSON.stringify(out || result, null, 2);
-    }
-    if (!text.trim()) {
-      text = "I ran the workflow but didn’t get any text back.";
-    }
+    if (!text) text = JSON.stringify(out || result, null, 2);
+    if (!text.trim()) text = "I ran the workflow but didn’t get any text back.";
 
     return res.status(200).json({ text });
   } catch (e) {
