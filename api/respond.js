@@ -13,26 +13,50 @@ export default async function handler(req, res) {
 
   try {
     const { messages } = req.body || {};
-    if (!Array.isArray(messages)) return res.status(400).json({ error: "Missing messages" });
+    if (!Array.isArray(messages)) {
+      return res.status(400).json({ error: "Missing messages" });
+    }
 
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-    // Optional: comma-separated vector store IDs via Vercel env
+    // Enable File Search only if a vector store is set
     const vectorIds = (process.env.VECTOR_STORE_IDS || "")
       .split(",").map(s => s.trim()).filter(Boolean);
 
     const response = await client.responses.create({
-      model: "gpt-5.2-mini",
+      model: "gpt-4o-mini",
       input: messages,
       instructions: INSTRUCTIONS,
       tools: vectorIds.length ? [{ type: "file_search" }] : [],
       tool_choice: "auto",
-      tool_resources: vectorIds.length ? { file_search: { vector_store_ids: vectorIds } } : undefined
+      tool_resources: vectorIds.length
+        ? { file_search: { vector_store_ids: vectorIds } }
+        : undefined
     });
 
-    res.status(200).json({ text: response.output_text ?? "" });
+    // Primary path
+    let text = response.output_text;
+
+    // Fallback extraction if output_text is empty
+    if (!text || !text.trim()) {
+      try {
+        const parts = (response.output || [])
+          .flatMap(o => o.content || [])
+          .filter(c => c?.type === "output_text" || c?.type === "text")
+          .map(c => c?.text?.value || c?.text)
+          .filter(Boolean);
+        text = (parts.join("\n") || "").trim();
+      } catch {}
+    }
+
+    if (!text || !text.trim()) {
+      text = "I’m here, but I didn’t get any text back. Try asking again in different words.";
+    }
+
+    return res.status(200).json({ text });
   } catch (e) {
-    console.error("Agent error:", e?.message || e);
-    res.status(500).json({ error: "Agent error" });
+    console.error("Geaux Learn error:", e);
+    // Send the error message to the frontend so you see what's wrong
+    return res.status(500).json({ error: e?.message || String(e) });
   }
 }
