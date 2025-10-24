@@ -1,104 +1,173 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Geaux Learn — AP Human Geography Tutor</title>
-<style>
-  :root{
-    --brand:#5b2db0; --accent:#f4c542;
-    --bg:#f7f7f8; --text:#0f172a; --muted:#64748b;
-    --bubble:#ffffff; --bubble-alt:#efeaff;
-    --radius:18px; --shadow:0 10px 30px rgba(15,23,42,.12);
-  }
-  html,body{height:100%;margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial}
-  body{background:var(--bg); color:var(--text);}
-  .shell{max-width:920px;margin:24px auto;padding:0 12px}
-  .card{background:#fff;border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
-  .header{background:linear-gradient(180deg,var(--brand),#3e1f84);color:#fff;display:flex;gap:14px;align-items:center;padding:16px 18px}
-  .avatar{width:46px;height:46px;border-radius:50%;overflow:hidden;border:2px solid #ffffff44}
-  .avatar img{width:100%;height:100%;object-fit:cover}
-  .title{font-weight:700;font-size:18px}
-  .subtitle{font-size:12.5px;opacity:.9;margin-top:2px}
-  .chat{padding:18px;min-height:58vh;display:flex;flex-direction:column;gap:10px;background:#fff}
-  .bubble{max-width:76%;padding:12px 14px;border-radius:var(--radius);box-shadow:0 2px 10px rgba(0,0,0,.05)}
-  .bot{background:var(--bubble);border-top-left-radius:6px}
-  .user{background:var(--bubble-alt);margin-left:auto;border-top-right-radius:6px}
-  .bot .tag{display:inline-block;margin-bottom:6px;font-size:11px;color:#fff;background:var(--brand);padding:3px 8px;border-radius:999px}
-  .composer{display:flex;gap:10px;align-items:center;padding:14px 16px;background:#fafafa;border-top:1px solid #eef1f6}
-  .box{flex:1;background:#fff;border:1px solid #e5e7eb;border-radius:999px;display:flex;align-items:center;padding:10px 12px}
-  textarea{border:none;outline:none;resize:none;width:100%;max-height:120px;min-height:38px;font:inherit;color:var(--text)}
-  .send{width:46px;height:46px;border:none;border-radius:999px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(91,45,176,.35);cursor:pointer}
-  .footer-note{text-align:center;color:var(--muted);font-size:12px;padding:10px 0 16px}
-  @media (max-width:640px){.shell{margin:10px auto}.bubble{max-width:90%}.header{padding:14px}}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Geaux Learn — AP Human Geography Tutor</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --purple: #6a1b9a;
+      --gold: #fdd835;
+      --gray: #f2f2f2;
+      --text: #222;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--purple);
+      color: white;
+      padding: 12px 20px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    }
+
+    header span.logo {
+      font-size: 22px;
+    }
+
+    .chat {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .bubble {
+      max-width: 80%;
+      padding: 14px 18px;
+      border-radius: 14px;
+      white-space: pre-wrap;
+      line-height: 1.6;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: var(--purple);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: var(--gray);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bot .md h3 {
+      margin: 8px 0 4px;
+      font-size: 17px;
+      color: var(--purple);
+    }
+
+    .bot .md p {
+      margin: 8px 0 12px;
+    }
+
+    .bot .md ul, .bot .md ol {
+      margin: 6px 0 10px 20px;
+    }
+
+    .bot .md li {
+      margin: 4px 0;
+    }
+
+    .bot .md strong {
+      font-weight: 700;
+    }
+
+    footer {
+      display: flex;
+      padding: 12px;
+      border-top: 1px solid #ddd;
+      background: white;
+    }
+
+    input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      outline: none;
+    }
+
+    button {
+      margin-left: 8px;
+      background: var(--purple);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0 18px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #8e24aa;
+    }
+
+    @media (max-width: 600px) {
+      .bubble { max-width: 95%; font-size: 15px; }
+      header { font-size: 16px; }
+    }
+  </style>
 </head>
+
 <body>
-  <div class="shell">
-    <div class="card" role="application" aria-label="Geaux Learn chat">
-      <div class="header">
-        <div class="avatar">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Honeybee-apis-mellifera.jpg/120px-Honeybee-apis-mellifera.jpg" alt="Geaux Learn" />
-        </div>
-        <div>
-          <div class="title">Geaux Learn</div>
-          <div class="subtitle">AP Human Geography Tutor</div>
-        </div>
-      </div>
+  <header>
+    <span class="logo">📘</span> Geaux Learn — AP Human Geography
+  </header>
 
-      <div id="log" class="chat" aria-live="polite">
-        <div class="bubble bot"><span class="tag">Geaux Learn</span> I’m ready to help! Ask me anything about AP Human Geography.</div>
-      </div>
-
-      <div class="composer">
-        <div class="box"><textarea id="inp" placeholder="Ask about DTM, migration, culture, urbanization…"></textarea></div>
-        <button id="send" class="send" aria-label="Send">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M21.44 2.56a1 1 0 0 0-1.05-.22L2.9 9.05a1 1 0 0 0 .08 1.88l7.2 2.4 2.4 7.2a1 1 0 0 0 1.88.08l6.71-17.49a1 1 0 0 0-.73-1.66ZM13.1 19.28l-1.73-5.19 4.32-4.32-5.19 1.73-5.28-1.76 14.5-5.56-6.62 15.1Z" fill="white"/>
-          </svg>
-        </button>
+  <div class="chat" id="chat">
+    <div class="bubble bot">
+      <div class="md">
+        👋 Hi! I’m <strong>Geaux Learn</strong>, your AP Human Geography study buddy.<br/><br/>
+        Ask me anything about the course—concepts, models, or practice questions—and I’ll guide you step-by-step 🌍
       </div>
     </div>
-    <div class="footer-note">“It’s a great day to be a Yellow Jacket!” • Geaux Learn</div>
   </div>
 
-<script>
-  const log=document.getElementById("log"), inp=document.getElementById("inp"), send=document.getElementById("send");
-  const messages=[{role:"assistant",content:"I’m ready to help! Ask me anything about AP Human Geography."}];
+  <footer>
+    <input id="input" placeholder="Type your question..." autocomplete="off" />
+    <button id="send">Send</button>
+  </footer>
 
-  function addBubble(role,text){
-    const div=document.createElement("div"); div.className="bubble "+(role==="user"?"user":"bot");
-    if(role!=="user"){const tag=document.createElement("span"); tag.className="tag"; tag.textContent="Geaux Learn"; div.appendChild(tag); div.appendChild(document.createTextNode(" "+text));}
-    else{div.textContent=text;}
-    log.appendChild(div); div.scrollIntoView({behavior:"smooth",block:"end"});
-  }
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const sendBtn = document.getElementById("send");
 
-  async function callAgent(userText){
-    messages.push({role:"user",content:userText});
-    try {
-      const r = await fetch("/api/respond", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({messages})
-      });
-
-      let data;
-      try { data = await r.json(); } catch { data = {}; }
-
-      if (!r.ok) {
-        const err = (data && data.error) ? data.error : ("HTTP "+r.status);
-        addBubble("assistant", "Error: " + err);
-        return;
-      }
-
-      const botText = (data && data.text) ? data.text : "(no text returned)";
-      messages.push({role:"assistant",content:botText});
-      addBubble("assistant",botText);
-    } catch (e) {
-      addBubble("assistant","Network error: " + (e?.message || e));
+    function addMessage(role, text) {
+      const div = document.createElement("div");
+      div.className = `bubble ${role}`;
+      const mdDiv = document.createElement("div");
+      mdDiv.className = "md";
+      mdDiv.innerHTML = marked.parse(text);
+      div.appendChild(mdDiv);
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
     }
-  }
 
-  send.addEventListener("click",async()=>{const t=inp.value.trim(); if(!t)return; addBubble("user",t); inp.value=""; await callAgent(t);});
-  inp.addEventListener("keydown",(e)=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send.click();}});
-</script>
+    async function sendMessage() {
+      const text = input.value.trim();
+      if (!text) ret
