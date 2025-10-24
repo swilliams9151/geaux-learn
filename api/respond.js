@@ -1,22 +1,14 @@
 import OpenAI from "openai";
 
-const INSTRUCTIONS = `
-You are "Geaux Learn", a friendly AP Human Geography tutor for Denham Springs High School.
+// Your Agent Builder workflow ID
+const AGENT_ID = "wf_68f8c07d88888190a77420411e0b85f80ac663618d486887";
 
-FORMAT & STYLE (important):
-- Write concise answers in **Markdown**.
-- Use short sections with **### headings**, bullet lists, and line breaks.
-- Keep paragraphs to ≤ 2 sentences.
-- Use bold for key terms (e.g., **DTM**, **push factors**).
-- If giving a practice prompt, label a section **### Practice** and use a numbered list for choices.
-
-GUARDRAILS:
-- Coach students to answers; never reveal test/quiz keys.
-- Use APHG vocabulary and models (DTM, migration, culture, urbanization, etc.).
-- If content came from course files, add "(from course materials)".
-
-Tone: encouraging, clear, teacher-friendly.
-`;
+// Optional: if your Agent lives in a specific org/workspace,
+// set OPENAI_ORG_ID in Vercel and we'll pass it here.
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+  organization: process.env.OPENAI_ORG_ID || undefined
+});
 
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Use POST" });
@@ -27,16 +19,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Missing messages" });
     }
 
-    const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-    // NOTE: No file_search here yet — just get the chat working first
+    // Call your Agent workflow. We do NOT send a model when invoking an Agent.
     const response = await client.responses.create({
-      model: "gpt-4o-mini",
-      input: messages,
-      instructions: INSTRUCTIONS
+      agent: AGENT_ID,
+      input: messages
     });
 
-    let text = response.output_text?.trim();
+    // Try simple extraction first
+    let text = (response.output_text || "").trim();
+
+    // Fallback extraction if needed
     if (!text) {
       try {
         const parts = (response.output || [])
@@ -47,11 +39,12 @@ export default async function handler(req, res) {
         text = (parts.join("\n") || "").trim();
       } catch {}
     }
+
     if (!text) text = "I’m here, but I didn’t get any text back. Try asking again in different words.";
 
     return res.status(200).json({ text });
   } catch (e) {
-    console.error("Geaux Learn error:", e);
+    console.error("Geaux Learn Agent Error:", e);
     return res.status(500).json({ error: e?.message || String(e) });
   }
 }
